@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "../components/ui/button";
 
 const formatTime = (ms: number | null) => {
-    if (!ms) return `0h 0m 0s`
+    if (!ms) return `00:00:00`
 
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
     const hours = Math.floor(minutes / 60)
 
-    return `${hours}h ${minutes % 60}m ${seconds % 60}s`
+    return `${hours.toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}`
 }
 
 export const Counter = () => {
@@ -42,9 +43,9 @@ export const Counter = () => {
     }, [startTime]);
 
     return (
-        <div className="w-screen h-screen flex flex-col items-center justify-center gap-4">
-            <button onClick={isRunning ? handleStop : handleStart} className="bg-white text-black px-4 py-2 rounded-md hover:bg-gray-200 transition-all duration-300 text-2xl">{isRunning ? 'Parar cronômetro' : 'Iniciar cronômetro'}</button>
-            <p className="text-2xl font-bold">{isRunning ? formatTime(elapsed) : formatTime(duration)}</p>
+        <div className="w-screen h-screen flex flex-col items-center justify-center gap-5">
+            <Button className="text-2xl px-6 py-6 bg-white text-black hover:bg-gray-200 transition-all duration-300" onClick={isRunning ? handleStop : handleStart}>{isRunning ? 'Parar cronômetro' : 'Iniciar cronômetro'}</Button>
+            <p className="text-5xl font-bold">{isRunning ? formatTime(elapsed) : formatTime(duration)}</p>
         </div>
     );
 };
