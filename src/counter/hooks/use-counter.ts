@@ -4,7 +4,7 @@ export const useCounter = () => {
     const [isRunning, setIsRunning] = useState(false);
     const [startTime, setStartTime] = useState<number | null>(null);
     const [now, setNow] = useState(Date.now());
-    const [duration, setDuration] = useState(0);
+    const [accumulatedDuration, setAccumulatedDuration] = useState(0);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -14,7 +14,10 @@ export const useCounter = () => {
         return () => clearInterval(interval)
     }, [])
 
-    const elapsed = useMemo(() => startTime ? now - startTime : 0, [startTime, now])
+    const elapsed = useMemo(() => {
+        if (!isRunning || !startTime) return accumulatedDuration;
+        return accumulatedDuration + (now - startTime);
+    }, [isRunning, startTime, now, accumulatedDuration])
 
     const handleStart = useCallback(() => {
         const now = Date.now();
@@ -23,19 +26,31 @@ export const useCounter = () => {
         setIsRunning(true);
     }, []);
 
-    const handleStop = useCallback(() => {
-        if (!startTime) return
+    const handlePause = useCallback(() => {
+        if (!startTime || !isRunning) return;
 
-        const diff = Date.now() - startTime
-        setDuration(diff)
+        const diff = Date.now() - startTime;
+        setAccumulatedDuration(prev => prev + diff);
+        setStartTime(null);
         setIsRunning(false);
-    }, [startTime]);
+    }, [startTime, isRunning]);
+
+    const handleStop = useCallback(() => {
+        if (isRunning && startTime) {
+            const diff = Date.now() - startTime;
+            setAccumulatedDuration(prev => prev + diff);
+        }
+        setStartTime(null);
+        setIsRunning(false);
+        setAccumulatedDuration(0);
+    }, [isRunning, startTime]);
 
     return {
         isRunning,
-        duration,
+        duration: elapsed,
         elapsed,
         handleStart,
+        handlePause,
         handleStop
     }
 }
